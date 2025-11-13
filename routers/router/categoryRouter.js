@@ -1,25 +1,26 @@
 const express = require("express");
 const {
   addCategory,
-  getCategory,
+  getAllCategory,
   updateCategory,
   updateCategoryByStatus,
   deleteCategory,
 } = require("../../controllers/CategoryController");
 const router = express.Router();
 
-router.get("/get-category", getCategory);
+router.get("/category/all-category", getAllCategory);
 
-router.post("/add-category", addCategory);
+router.post("/category/add-category", addCategory);
 
 // router.get("/get-category/:categoryId", (req, res) => {
 //   return res.status(200).json({ message: "Get Category By Id" });
 // });
 
-router.post("/update-category/:categoryId", updateCategory);
+router.post("/category/update-category/:categoryId", updateCategory);
 
-router.get("/update-status/:categoryId", updateCategoryByStatus);
+router.get("/category/update-status/:categoryId", updateCategoryByStatus);
 
-router.get("/delete-category/:categoryId", deleteCategory);
+router.get("/category/delete-category/:categoryId", deleteCategory);
 
 module.exports = () => router;
+  

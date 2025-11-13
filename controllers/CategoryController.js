@@ -2,14 +2,18 @@ const CategoryModel = require("../models/CagegoryModel");
 
 module.exports = {
   addCategory: async (req, res) => {
-    const data = await CategoryModel.create(req.body);
-    return res
-      .status(200)
-      .json({ message: "Category Added successfully", data });
+    try {
+      const data = await CategoryModel.create(req.body);
+      return res
+        .status(200)
+        .json({ message: "Category Added successfully", data });
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
   },
-  getCategory: () => {
-    const data = CategoryModel.find();
-    return res.status(200).json({ message: "Get Category List", data });
+  getAllCategory: async (req, res) => {
+    const data = await CategoryModel.find();
+    return res.status(200).json(data);
   },
   updateCategory: (req, res) => {
     const data = CategoryModel.findByIdAndUpdate(
