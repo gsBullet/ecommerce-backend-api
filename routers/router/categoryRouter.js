@@ -18,7 +18,7 @@ router.post("/category/add-category", addCategory);
 
 router.post("/category/update-category/:categoryId", updateCategory);
 
-router.get("/category/update-status/:categoryId", updateCategoryByStatus);
+router.post("/category/update-category-status/:categoryId", updateCategoryByStatus);
 
 router.get("/category/delete-category/:categoryId", deleteCategory);
 
