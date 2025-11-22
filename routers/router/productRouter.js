@@ -2,13 +2,12 @@
 const express = require("express");
 const {
   addProduct,
-  getProducts,
+  getAllProducts,
   updateProduct,
-  getCategoriesForProduct,
+  updateProductStatus,
   getProductById,
   deleteProduct,
 } = require("../../controllers/ProductController");
-const { uploadProductFiles } = require("../../middleware/uploadMiddeleware");
 
 const router = express.Router();
 
@@ -23,8 +22,8 @@ router.post(
 
 // Other routes
 router.get("/product/get-product/:productId", getProductById);
-router.get("/product/get-products", getProducts);
+router.get("/product/all-products", getAllProducts);
 router.get("/product/delete-product/:productId", deleteProduct);
-router.get("/product/categories/options", getCategoriesForProduct);
+router.post("/product/update-product-status/:productId", updateProductStatus);
 
 module.exports = () => router;

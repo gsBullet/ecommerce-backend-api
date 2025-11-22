@@ -8,8 +8,8 @@ module.exports = {
         .status(200)
         .json({ message: "Category Added successfully", data });
     } catch (error) {
-      console.log('error',error.code);
-      
+      console.log("error", error.code);
+
       if (error?.code == 11000) {
         return res.status(400).json({ message: "Category already exists" });
       }
@@ -36,7 +36,10 @@ module.exports = {
     });
   },
   getAllCategoryForProduct: async (req, res) => {
-    const data = await CategoryModel.find().sort({ createdAt: -1 }).exec();
+    const data = await CategoryModel.find()
+      .sort({ createdAt: -1 })
+      .select("_id name")
+      .exec();
 
     return res.status(200).json({
       message: "Get Category List",

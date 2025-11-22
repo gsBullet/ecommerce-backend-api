@@ -112,7 +112,7 @@ module.exports = {
     }
   },
 
-  getProducts: async (req, res) => {
+  getAllProducts: async (req, res) => {
     try {
       const {
         page = 1,
@@ -131,6 +131,7 @@ module.exports = {
         query.$or = [
           { name: { $regex: search, $options: "i" } },
           { description: { $regex: search, $options: "i" } },
+          { id: { $regex: search, $options: "i" } },
         ];
       }
 
@@ -138,6 +139,7 @@ module.exports = {
       if (category) {
         query.category = category;
       }
+      
 
       // Filter by availability
       if (available !== "") {
@@ -293,6 +295,39 @@ module.exports = {
     }
   },
 
+  updateProductStatus: async (req, res) => {
+    try {
+      const { productId } = req.params;
+      const { status } = req.body;
+
+      // Check if product exists
+      const product = await ProductModel.findOne({
+        _id: productId,
+      });
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: "Product not found",
+        });
+      }
+      product.status = status;
+      await product.save();
+
+      res.json({
+        success: true,
+        message: "Product status updated successfully",
+        data: product,
+      });
+    } catch (error) {
+      console.error("Update product status error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error updating product status",
+        error: error.message,
+      });
+    }
+  },
+
   deleteProduct: async (req, res) => {
     try {
       const { id } = req.params;
@@ -331,26 +366,6 @@ module.exports = {
       res.status(500).json({
         success: false,
         message: "Error deleting product",
-        error: error.message,
-      });
-    }
-  },
-
-  getCategoriesForProduct: async (req, res) => {
-    try {
-      const categories = await CategoryModel.find({ status: true })
-        .select("_id name")
-        .sort({ name: 1 });
-
-      res.json({
-        success: true,
-        data: categories,
-      });
-    } catch (error) {
-      console.error("Get categories error:", error);
-      res.status(500).json({
-        success: false,
-        message: "Error fetching categories",
         error: error.message,
       });
     }
