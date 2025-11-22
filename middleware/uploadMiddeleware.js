@@ -1,53 +1,24 @@
-
-const multer = require("multer");
+const fs = require("fs-extra");
 const path = require("path");
-const fs = require("fs");
 
-// Configure Multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    // Use user ID from request, convert to string if ObjectID
-    const userId = req.user?.id?.toString() || "default"; // Convert ObjectID to string
-    const uploadDir = path.join("uploads", userId);
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename to avoid conflicts
-    // const timestamp = Date.now();
-    // const randomNum = Math.round(Math.random() * 1e9);
-    // const ext = path.extname(file.originalname);
-    // const baseName = path.basename(file.originalname, ext);
-    // const uniqueFilename = `${baseName}_${timestamp}_${randomNum}${ext}`;
+const uploadFile = (file, directory = "uploads") => {
+  let imageName = file.name.split(".")[0];
+  let imageExtension = file.name.split(".")[1];
 
-    const filename = file.originalname;
+  fileName =
+    directory + "/" + imageName + "-" + Date.now() + "." + imageExtension;
 
-    // Optional: Still check for existing file and handle overwrite
-    const userId = req.user?.id?.toString() || "default";
-    const filePath = path.join("uploads", userId, filename);
+  const targetPath = path.join(__dirname, "../") + "/" + fileName;
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-      console.log(`Overwriting existing file: ${filePath}`);
-      req.fileOverwritten = true;
-      cb(null, filename); // Keep original name if overwriting
-    } else {
-      cb(null, filename); // Use original  name for new files
-    }
-  },
-});
+  try {
+    fs.move(file.path, targetPath, (err) => {
+      console.log(err);
+    });
 
-const upload = multer({
-  storage,
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.match("image.*")) {
-      return cb(new Error("Only image files are allowed!"), false);
-    }
-    cb(null, true);
-  },
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-});
+    return fileName;
+  } catch (error) {
+    return "";
+  }
+};
 
-module.exports = upload;
+exports.uploadFile = uploadFile;

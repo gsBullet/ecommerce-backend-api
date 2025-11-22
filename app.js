@@ -30,6 +30,7 @@ app.use(cors(corsOptions));
 // 4. Additional Middleware
 app.set("json spaces", 4);
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(formData.parse());
 app.use(

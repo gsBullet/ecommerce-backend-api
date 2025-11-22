@@ -1,26 +1,30 @@
+// routes/productRoutes.js
 const express = require("express");
 const {
   addProduct,
-  getProduct,
+  getProducts,
   updateProduct,
-  updateProductByStatus,
+  getCategoriesForProduct,
+  getProductById,
   deleteProduct,
 } = require("../../controllers/ProductController");
-const upload = require("../../middleware/uploadMiddeleware");
+const { uploadProductFiles } = require("../../middleware/uploadMiddeleware");
+
 const router = express.Router();
 
-router.get("/get-product", getProduct);
+// Add product route with upload middleware
+router.post("/product/add-product", addProduct);
 
-router.post("/add-product", upload.single("image"), addProduct);
-
+// Update product route
 router.post(
-  "/update-product/:productId",
-  upload.single("image"),
+  "/product/update-product/:productId",
   updateProduct
 );
 
-router.post("/update-status/:productId", updateProductByStatus);
-
-router.get("/delete-product/:productId", deleteProduct);
+// Other routes
+router.get("/product/get-product/:productId", getProductById);
+router.get("/product/get-products", getProducts);
+router.get("/product/delete-product/:productId", deleteProduct);
+router.get("/product/categories/options", getCategoriesForProduct);
 
 module.exports = () => router;

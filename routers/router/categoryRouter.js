@@ -5,10 +5,12 @@ const {
   updateCategory,
   updateCategoryByStatus,
   deleteCategory,
+  getAllCategoryForProduct
 } = require("../../controllers/CategoryController");
 const router = express.Router();
 
 router.get("/category/all-category", getAllCategory);
+router.get("/category/all-category-for-product", getAllCategoryForProduct);
 
 router.post("/category/add-category", addCategory);
 

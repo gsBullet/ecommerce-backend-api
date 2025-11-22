@@ -8,6 +8,11 @@ module.exports = {
         .status(200)
         .json({ message: "Category Added successfully", data });
     } catch (error) {
+      console.log('error',error.code);
+      
+      if (error?.code == 11000) {
+        return res.status(400).json({ message: "Category already exists" });
+      }
       return res.status(400).json({ message: error.message });
     }
   },
@@ -30,6 +35,14 @@ module.exports = {
       totalItems: count,
     });
   },
+  getAllCategoryForProduct: async (req, res) => {
+    const data = await CategoryModel.find().sort({ createdAt: -1 }).exec();
+
+    return res.status(200).json({
+      message: "Get Category List",
+      data,
+    });
+  },
   updateCategory: async (req, res) => {
     try {
       const data = await CategoryModel.findByIdAndUpdate(
@@ -46,7 +59,7 @@ module.exports = {
   },
   updateCategoryByStatus: async (req, res) => {
     console.log(`req.body`, req.body);
-    console.log(`req.body`,  req.params.categoryId,);
+    console.log(`req.body`, req.params.categoryId);
     const data = await CategoryModel.findByIdAndUpdate(
       req.params.categoryId,
       { status: req.body.status },

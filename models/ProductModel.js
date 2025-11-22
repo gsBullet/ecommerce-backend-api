@@ -10,6 +10,7 @@ const productSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      unique: true,
     },
     description: {
       type: String,
@@ -28,8 +29,12 @@ const productSchema = new mongoose.Schema(
       ref: "Categories",
       required: true,
     },
-    image: {
+    thumbnail: {
       type: String,
+      required: true,
+    },
+    related_images: {
+      type: [],
       required: true,
     },
     quantity: {
