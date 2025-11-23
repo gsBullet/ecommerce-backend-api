@@ -139,7 +139,6 @@ module.exports = {
       if (category) {
         query.category = category;
       }
-      
 
       // Filter by availability
       if (available !== "") {
@@ -209,13 +208,13 @@ module.exports = {
 
   updateProduct: async (req, res) => {
     try {
-      const { id } = req.params;
+      const { productId } = req.params;
+      console.log(productId);
+      
       const updateData = { ...req.body };
 
       // Check if product exists
-      const product = await ProductModel.findOne({
-        $or: [{ _id: id }, { id: id }],
-      });
+      const product = await ProductModel.findOne({ _id: productId });
       if (!product) {
         return res.status(404).json({
           success: false,
@@ -227,7 +226,7 @@ module.exports = {
       if (updateData.name && updateData.name !== product.name) {
         const existingProduct = await ProductModel.findOne({
           name: updateData.name,
-          _id: { $ne: product._id },
+          id: { $ne: product.id },
         });
         if (existingProduct) {
           return res.status(400).json({
@@ -275,7 +274,7 @@ module.exports = {
 
       // Update product
       const updatedProduct = await ProductModel.findOneAndUpdate(
-        { $or: [{ _id: id }, { id: id }] },
+        { _id: productId },
         updateData,
         { new: true, runValidators: true }
       ).populate("category", "name");
