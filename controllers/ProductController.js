@@ -210,7 +210,7 @@ module.exports = {
     try {
       const { productId } = req.params;
       console.log(productId);
-      
+
       const updateData = { ...req.body };
 
       // Check if product exists
@@ -236,29 +236,30 @@ module.exports = {
         }
       }
 
-      // Handle thumbnail update
+      // Handle file paths for local storage
+      let thumbnail = [];
+      let related_images = [];
+
+      // Process thumbnail
       if (req.files?.thumbnail) {
-        // Delete old thumbnail if exists
-        if (product.thumbnail && fs.existsSync(product.thumbnail)) {
-          fs.unlinkSync(product.thumbnail);
-        }
-        updateData.thumbnail = req.files.thumbnail[0].path;
+        thumbnail = uploadFile(req.files.thumbnail, "uploads/products");
+        console.log("Thumbnail saved at:", thumbnail);
       }
 
-      // Handle images update
-      if (req.files?.images && req.files.images.length > 0) {
-        // Delete old images if needed (optional - you might want to keep them)
-        // if (product.images && product.images.length > 0) {
-        //   product.images.forEach(imagePath => {
-        //     if (fs.existsSync(imagePath)) {
-        //       fs.unlinkSync(imagePath);
-        //     }
-        //   });
-        // }
-
-        const newImagePaths = req.files.images.map((file) => file.path);
-        // Combine with existing images or replace based on your requirement
-        updateData.images = [...product.images, ...newImagePaths];
+      // Process multiple images
+      if (req.files?.related_images) {
+        const images = req.files.related_images;
+        images.forEach((image) => {
+          related_images.push(uploadFile(image, "uploads/related_images"));
+        });
+        console.log("Related images saved at:", related_images);
+      }
+      // Update file paths if new files were uploaded
+      if (thumbnail.length > 0) {
+        updateData.thumbnail = thumbnail;
+      }
+      if (related_images.length > 0) {
+        updateData.related_images = related_images;
       }
 
       // Convert string values to appropriate types
