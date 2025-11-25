@@ -9,7 +9,7 @@ router.post(
   UserRoleController.updateUserRole
 );
 
-router.get("/user-role/get-all-user-list", UserRoleController.getAllUserList);
+router.get("/user-role/get-all-user-roles", UserRoleController.getAllUserList);
 
 router.get(
   "/user-role/delete-user-role/:userId",

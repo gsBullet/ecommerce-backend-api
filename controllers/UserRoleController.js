@@ -52,11 +52,15 @@ module.exports = {
   },
   getAllUserList: async (req, res) => {
     const data = await UserRoleModel.find();
-    res.status(200).json({
-      success: true,
-      data,
-      message: "User Role List Fetched Successfully",
-    });
+    if (data) {
+      successHandler({
+        data,
+        message: "User Roles fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    }
   },
   deleteUserRole: async (req, res) => {
     const { userId } = req.params;
