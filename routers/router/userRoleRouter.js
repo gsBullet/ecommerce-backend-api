@@ -15,7 +15,7 @@ router.get(
   "/user-role/delete-user-role/:userId",
   UserRoleController.deleteUserRole
 );
-router.get(
+router.post(
   "/user-role/update-user-role-status/:userId",
   UserRoleController.updateUserRoleStatus
 );

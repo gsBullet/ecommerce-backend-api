@@ -72,15 +72,28 @@ module.exports = {
   updateUserRoleStatus: async (req, res) => {
     const { userId } = req.params;
     const { status } = req.body;
-    const data = await UserRoleModel.findByIdAndUpdate(
-      userId,
-      { status },
-      { new: true }
-    );
-    res.status(200).json({
-      success: true,
-      data,
-      message: "User Role Status Updated Successfully",
-    });
+
+    try {
+      const data = await UserRoleModel.findByIdAndUpdate(
+        userId,
+        { status },
+        { new: true }
+      );
+      successHandler({
+        data,
+        message: "User Role status updated successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to update User Role status",
+        code: 500,
+        res,
+        req,
+      });
+    }
   },
 };
