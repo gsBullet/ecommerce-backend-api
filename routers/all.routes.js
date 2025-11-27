@@ -3,12 +3,13 @@ const categoryRouter = require("./router/categoryRouter");
 const productRouter = require("./router/productRouter");
 const userRoleRouter = require("./router/userRoleRouter");
 const userRouter = require("./router/userRouter");
+const authRouter = require("./router/authRouter");
 const router = express.Router();
 
-router.use(categoryRouter())
-router.use(productRouter())
-router.use(userRoleRouter())
-router.use(userRouter())
+router.use(authRouter());
+router.use(categoryRouter());
+router.use(productRouter());
+router.use(userRoleRouter());
+router.use(userRouter());
 
-
-module.exports = router
+module.exports = router;
