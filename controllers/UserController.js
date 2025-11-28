@@ -7,15 +7,16 @@ const saltRounds = 12;
 module.exports = {
   addUser: async (req, res) => {
     try {
-      const { fullName, email, password, userRole, phone } = req.body;
+      const { firstName, lastName, email, password, userRole, phone } =
+        req.body;
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-
       const data = await new UserModel({
-        fullName,
+        firstName,
+        lastName,
         email,
         phone,
-        password:hashedPassword,
+        password: hashedPassword,
         userRole,
         status: true,
       }).save();
@@ -59,7 +60,7 @@ module.exports = {
       .json({ success: true, data, message: "User  Updated Successfully" });
   },
   getAllUserList: async (req, res) => {
-    const data = await UserModel.find();
+    const data = await UserModel.find().sort({ updatedAt: -1 });
     if (data) {
       successHandler({
         data,

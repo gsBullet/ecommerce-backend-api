@@ -3,7 +3,11 @@ const { Schema } = mongoose;
 
 const UserSchema = new Schema(
   {
-    fullName: {
+    firstName: {
+      type: String,
+      required: true,
+    },
+    lastName: {
       type: String,
       required: true,
     },
@@ -21,7 +25,7 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
-    password:{
+    password: {
       type: String,
       required: true,
     },
