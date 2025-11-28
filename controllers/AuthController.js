@@ -22,7 +22,7 @@ module.exports = {
       if (!isPasswordValid) {
         return res.status(400).json({
           success: false,
-          message: "Invalid credentials",
+          message: "password does not match",
         });
       }
 
@@ -46,8 +46,9 @@ module.exports = {
 
       return res.status(200).json({
         success: true,
-        userData,
+        data: userData,
         token,
+        message:"User Singin Successfully"
       });
     } catch (error) {
       console.error("Signin Error:", error);
