@@ -19,6 +19,7 @@ const ErrorHandler = ({ error, message, code, res, req }) => {
   return res.status(code).json({
     success: false,
     message: message,
+    error: error,
   });
 
   //   setTimeout(() => {

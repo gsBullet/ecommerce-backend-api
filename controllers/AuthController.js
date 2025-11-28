@@ -2,6 +2,8 @@ const bcrypt = require("bcrypt");
 const saltRounds = 12;
 var jwt = require("jsonwebtoken");
 const UserModel = require("../models/UserModel");
+const ErrorHandler = require("../utils/error");
+const successHandler = require("../utils/success");
 const jwtSecret = "842a2780-bb8e-482c-b22c-823084e1f054";
 module.exports = {
   signin: async (req, res) => {
@@ -26,18 +28,18 @@ module.exports = {
         });
       }
 
-      // Create JWT token
       const token = jwt.sign(
         {
-          data: {
-            fullName: user.fullName,
-            userRole: user.userRole,
-            createdAt: user.createdAt,
-            _id: user._id,
-          },
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          phone: user.phone,
+          userRole: user.userRole,
+          createdAt: user.createdAt,
+          _id: user._id,
         },
         jwtSecret,
-        { expiresIn: "1h" }
+        { expiresIn: "3h" }
       );
 
       // Remove password before sending data
@@ -48,7 +50,7 @@ module.exports = {
         success: true,
         data: userData,
         token,
-        message:"User Singin Successfully"
+        message: "User Singin Successfully",
       });
     } catch (error) {
       console.error("Signin Error:", error);
@@ -59,5 +61,37 @@ module.exports = {
     }
   },
 
+  checkAuth: async (req, res, next) => {
+    try {
+      const user = await UserModel.findById(req.userData._id).select(
+        "-password"
+      );
+      if (!user) {
+        return ErrorHandler({
+          error: "Unauthorized",
+          message: "User not found",
+          code: 401,
+          res,
+          req,
+        });
+      }
+      next();
+      return successHandler({
+        data: user,
+        message: "Authorized User",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      return ErrorHandler({
+        error,
+        message: "User not found",
+        code: 401,
+        res,
+        req,
+      });
+    }
+  },
   singup: async (req, res) => {},
 };
