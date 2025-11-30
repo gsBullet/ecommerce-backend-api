@@ -3,6 +3,7 @@ const CategoryModel = require("../models/CagegoryModel");
 const fs = require("fs");
 const path = require("path");
 const { uploadFile } = require("../middleware/uploadMiddeleware");
+const deleteFile = require("../middleware/deleteFile");
 
 module.exports = {
   addProduct: async (req, res) => {
@@ -301,19 +302,13 @@ module.exports = {
       const { status } = req.body;
 
       // Check if product exists
-      const product = await ProductModel.findOne({
-        _id: productId,
-      });
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          message: "Product not found",
-        });
-      }
-      product.status = status;
-      await product.save();
-
-      res.json({
+      const product = await ProductModel.findByIdAndUpdate(
+        productId,
+        { status },
+        { new: true }
+      );
+      console.log(product);
+      return res.json({
         success: true,
         message: "Product status updated successfully",
         data: product,
@@ -330,11 +325,10 @@ module.exports = {
 
   deleteProduct: async (req, res) => {
     try {
-      const { id } = req.params;
+      const { productId } = req.params;
 
-      const product = await ProductModel.findOne({
-        $or: [{ _id: id }, { id: id }],
-      });
+      const product = await ProductModel.findById(productId);
+
       if (!product) {
         return res.status(404).json({
           success: false,
@@ -342,24 +336,22 @@ module.exports = {
         });
       }
 
-      // Delete images from file system
-      if (product.thumbnail && fs.existsSync(product.thumbnail)) {
-        fs.unlinkSync(product.thumbnail);
+      // Delete Thumbnail
+      if (product.thumbnail) {
+        deleteFile(product.thumbnail);
       }
 
-      if (product.images && product.images.length > 0) {
-        product.images.forEach((imagePath) => {
-          if (fs.existsSync(imagePath)) {
-            fs.unlinkSync(imagePath);
-          }
-        });
+      // Delete All Related Images
+      if (product.related_images?.length > 0) {
+        product.related_images.forEach((img) => deleteFile(img));
       }
 
-      await ProductModel.findOneAndDelete({ $or: [{ _id: id }, { id: id }] });
+      // Delete Product from DB
+      await ProductModel.findByIdAndDelete(productId);
 
       res.json({
         success: true,
-        message: "Product deleted successfully",
+        message: "Product and all images deleted successfully",
       });
     } catch (error) {
       console.error("Delete product error:", error);
