@@ -52,15 +52,48 @@ module.exports = {
   },
   updateUser: async (req, res) => {
     const { userId } = req.params;
-    const data = await UserModel.findByIdAndUpdate(userId, req.body, {
-      new: true,
-    });
-    res
-      .status(200)
-      .json({ success: true, data, message: "User  Updated Successfully" });
+    const { firstName, lastName, email, phone, userRole, password } = req.body;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      req.body.password = hashedPassword;
+      const data = await UserModel.findByIdAndUpdate(userId, req.body, {
+        new: true,
+      });
+      return successHandler({
+        data,
+        message: "User  Updated Successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } else {
+      const data = await UserModel.findByIdAndUpdate(
+        userId,
+        {
+          firstName,
+          lastName,
+          email,
+          phone,
+          userRole,
+        },
+        {
+          new: true,
+        }
+      );
+      return successHandler({
+        data,
+        message: "User  Updated Successfully",
+        code: 200,
+        res,
+        req,
+      });
+    }
   },
   getAllUserList: async (req, res) => {
-    const data = await UserModel.find().sort({ updatedAt: -1 });
+    const data = await UserModel.find()
+      .populate("userRole", "_id userRole")
+      .sort({ createdAt: -1 })
+      .exec();
     if (data) {
       successHandler({
         data,

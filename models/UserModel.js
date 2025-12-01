@@ -19,15 +19,15 @@ const UserSchema = new Schema(
     phone: {
       type: String,
       required: true,
-      unique: true,
+      // unique: true,
     },
     userRole: {
-      type: String,
+      type: Schema.Types.ObjectId,
+      ref: "userroles",
       required: true,
     },
     password: {
       type: String,
-      required: true,
     },
     status: {
       type: Boolean,
