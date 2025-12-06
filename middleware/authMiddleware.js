@@ -6,6 +6,8 @@ const jwtSecret = "842a2780-bb8e-482c-b22c-823084e1f054";
 const authMiddleware = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
+    
+    // console.log( req);
 
     // No authorization header
     if (!authHeader) {

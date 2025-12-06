@@ -14,7 +14,6 @@ const PORT = process.env.PORT || 9000;
 
 const corsOptions = {
   origin: "*",
-  // origin: "https://instancereport.deepseahost.com",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
   allowedHeaders: [
     "Origin",
@@ -40,7 +39,7 @@ app.use(
 );
 
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
-app.use('/api',allRoutes);
+app.use("/api", allRoutes);
 
 mongoose
   .connect(process.env.MONGODB_URL)
@@ -49,4 +48,3 @@ mongoose
   })
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
-

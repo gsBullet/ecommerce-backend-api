@@ -11,7 +11,7 @@ module.exports = {
     });
   },
   getNewProducts: async (req, res) => {
-    const newProducts = await ProductModel.find({}).sort({ createdAt: -1 }).limit(4);
+    const newProducts = await ProductModel.find({}).sort({ createdAt: -1 }).limit(6);
 
     return res.status(200).json({
       success: true,

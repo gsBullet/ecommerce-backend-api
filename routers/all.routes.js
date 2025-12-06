@@ -5,9 +5,11 @@ const userRoleRouter = require("./router/userRoleRouter");
 const userRouter = require("./router/userRouter");
 const authRouter = require("./router/authRouter");
 const websiteRouter = require("./router/websiteRouter");
+const cartRouter = require("./router/cartRouter");
 const router = express.Router();
 
 router.use(websiteRouter());
+router.use(cartRouter());
 router.use(authRouter());
 router.use(categoryRouter());
 router.use(productRouter());

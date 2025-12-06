@@ -170,7 +170,7 @@ module.exports = {
       });
     } catch (error) {
       console.error("Get products error:", error);
-      res.status(500).json({
+     return res.status(500).json({
         success: false,
         message: "Error fetching products",
         error: error.message,

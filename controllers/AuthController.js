@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const saltRounds = 12;
 var jwt = require("jsonwebtoken");
 const UserModel = require("../models/UserModel");
+const GeneralUsersModel = require("../models/GeneralUsersModel");
 const ErrorHandler = require("../utils/error");
 const successHandler = require("../utils/success");
 const jwtSecret = "842a2780-bb8e-482c-b22c-823084e1f054";
@@ -39,7 +40,7 @@ module.exports = {
           _id: user._id,
         },
         jwtSecret,
-        { expiresIn: "3h" }
+        { expiresIn: "7d" }
       );
 
       // Remove password before sending data
@@ -61,11 +62,16 @@ module.exports = {
     }
   },
 
-  checkAuth: async (req, res, next) => {
+  checkAuth: async (req, res) => {
     try {
-      const user = await UserModel.findById(req.userData._id).select(
-        "-password"
-      );
+      const isCustomer = req.userData?.userRole === "customer";
+
+      const Model = isCustomer ? GeneralUsersModel : UserModel;
+
+      const user = await Model.findById(req.userData?._id)
+        .select(isCustomer ? "" : "-password")
+        .lean();
+
       if (!user) {
         return ErrorHandler({
           error: "Unauthorized",
@@ -75,7 +81,7 @@ module.exports = {
           req,
         });
       }
-      next();
+
       return successHandler({
         data: user,
         message: "Authorized User",
@@ -86,12 +92,13 @@ module.exports = {
     } catch (error) {
       return ErrorHandler({
         error,
-        message: "User not found",
+        message: "Authorization failed",
         code: 401,
         res,
         req,
       });
     }
   },
+
   singup: async (req, res) => {},
 };
