@@ -66,7 +66,7 @@ module.exports = {
       }
 
       // Create product
-      const product = new ProductModel({
+      const product = await new ProductModel({
         id,
         name,
         description,
@@ -170,7 +170,7 @@ module.exports = {
       });
     } catch (error) {
       console.error("Get products error:", error);
-     return res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "Error fetching products",
         error: error.message,
