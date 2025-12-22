@@ -165,4 +165,66 @@ module.exports = {
       }
     }
   },
+  updateCustomerUserInfo: async (req, res) => {
+    try {
+      const { fullName, phone, email, address, state, postalCode, city ,deliveryMethod} =
+        req.body.formData;
+
+      const userId = req.params.userId;
+
+      const user = await GeneralUsersModel.findById(userId);
+
+      if (!user) {
+        return ErrorHandler({
+          message: "User not found",
+          code: 404,
+          res,
+          req,
+        });
+      }
+
+      // 🔹 IF address exists → UPDATE first address
+      if (user.addresses.length > 0) {
+        user.addresses[0].fullName = fullName;
+        user.addresses[0].email = email;
+        user.addresses[0].phone = phone;
+        user.addresses[0].address = address;
+        user.addresses[0].city = city;
+        user.addresses[0].state = state;
+        user.addresses[0].postalCode = postalCode;
+        user.addresses[0].deliveryMethod = deliveryMethod;
+      }
+      // 🔹 IF address empty → PUSH
+      else {
+        user.addresses.push({
+          fullName,
+          phone,
+          email,
+          address,
+          city,
+          state,
+          postalCode,
+          country: "Bangladesh",
+        });
+      }
+
+      await user.save();
+
+      successHandler({
+        data: user,
+        message: "User info updated successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (err) {
+      ErrorHandler({
+        error: err,
+        message: "Failed to update user info",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
 };

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const HeroBannerSchema = new mongoose.Schema(
+const AvatarBannerSchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -12,7 +12,7 @@ const HeroBannerSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    heroImg: {
+    avatar: {
       type: String, // Image URL or file path
       required: true,
     },
@@ -27,5 +27,5 @@ const HeroBannerSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("hero", HeroBannerSchema);
+module.exports = mongoose.model("avatarbanners", AvatarBannerSchema);
 

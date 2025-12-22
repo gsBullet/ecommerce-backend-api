@@ -16,6 +16,10 @@ router.post(
   "/auth/general-user-forgot-password",
   GeneralUserController.forgotPasswordCustomerUser
 );
+router.post(
+  "/auth/general-user-update-info/:userId",
+  GeneralUserController.updateCustomerUserInfo
+);
 router.post("/auth/sign-in", AuthController.signin);
 router.post("/auth/sign-up", AuthController.singup);
 router.use(authMiddleware);

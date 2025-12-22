@@ -1,14 +1,14 @@
 const { uploadFile } = require("../middleware/uploadMiddeleware");
-const HeroBannerModel = require("../models/HeroBannerModel");
+const AvatarModel = require("../models/AvatarModel");
 const ErrorHandler = require("../utils/error");
 const successHandler = require("../utils/success");
 const fs = require("fs");
 const path = require("path");
 
 /**
- * ✅ Create Hero Banner
+ * ✅ Create Avatar Banner
  */
-exports.createHeroBanner = async (req, res) => {
+exports.createAvatarBanner = async (req, res) => {
   try {
     const { title, desc } = req.body;
     const avatar = req.files?.avatar;
@@ -32,7 +32,7 @@ exports.createHeroBanner = async (req, res) => {
       console.log("banner saved at:", avatarImage);
     }
 
-    const banner = await HeroBannerModel.create({
+    const banner = await AvatarModel.create({
       title,
       desc,
       avatar: avatarImage,
@@ -41,7 +41,7 @@ exports.createHeroBanner = async (req, res) => {
 
     successHandler({
       data: banner,
-      message: "Hero Banner created successfully",
+      message: "Avatar Banner created successfully",
       code: 200,
       res,
       req,
@@ -49,7 +49,7 @@ exports.createHeroBanner = async (req, res) => {
   } catch (error) {
     ErrorHandler({
       error,
-      message: "Failed to create Hero Banner",
+      message: "Failed to create Avatar Banner",
       code: 500,
       res,
       req,
@@ -58,13 +58,13 @@ exports.createHeroBanner = async (req, res) => {
 };
 
 /**
- * ✅ Get All Hero Banners
+ * ✅ Get All Avatar Banners
  */
-exports.getAllHeroBanners = async (req, res) => {
+exports.getAllAvatarBanners = async (req, res) => {
   const { page, limit } = req.query;
 
   try {
-    const banners = await HeroBannerModel.find()
+    const banners = await AvatarModel.find()
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip((page - 1) * limit)
@@ -75,9 +75,9 @@ exports.getAllHeroBanners = async (req, res) => {
         banners,
         currentPage: parseInt(page),
         totalPages: Math.ceil(banners.length / limit),
-        totalItems: await HeroBannerModel.countDocuments(),
+        totalItems: await AvatarModel.countDocuments(),
       },
-      message: "Hero Banners fetched successfully",
+      message: "Avatar Banners fetched successfully",
       code: 200,
       res,
       req,
@@ -85,7 +85,7 @@ exports.getAllHeroBanners = async (req, res) => {
   } catch (error) {
     ErrorHandler({
       error,
-      message: "Failed to fetch Hero Banners",
+      message: "Failed to fetch Avatar Banners",
       code: 500,
       res,
       req,
@@ -94,20 +94,22 @@ exports.getAllHeroBanners = async (req, res) => {
 };
 
 /**
- * ✅ Update Hero Banner
+ * ✅ Update Avatar Banner
  */
-exports.updateHeroBanner = async (req, res) => {
+exports.updateAvatarBanner = async (req, res) => {
   try {
     const { title, desc } = req.body;
-    const avatarImg = req.files?.avatar?.[0]; // multer array format
+    const avatarImg = req.files?.avatar;
+    console.log("avatarImg:", avatarImg);
+
     const { id } = req.params;
 
-    const avatar = await HeroBannerModel.findById(id);
+    const avatar = await AvatarModel.findById({ _id: id });
 
     if (!avatar) {
       return res.status(404).json({
         success: false,
-        message: "avatar not found",
+        message: "Avatar not found",
       });
     }
 
@@ -122,7 +124,11 @@ exports.updateHeroBanner = async (req, res) => {
 
     let newAvatarPath = avatar.avatar;
 
+    console.log("newAvatarPath:", newAvatarPath);
+
+    // If new file uploaded
     if (avatarImg) {
+      // delete old image
       if (avatar.avatar) {
         const oldImagePath = path.join("uploads/avatars/", avatar.avatar);
         if (fs.existsSync(oldImagePath)) {
@@ -130,10 +136,12 @@ exports.updateHeroBanner = async (req, res) => {
         }
       }
 
-      newAvatarPath = avatarImg.filename;
+      // Save new image to folder
+      const uploadPath = uploadFile(avatarImg, "uploads/avatars/");
+      newAvatarPath = uploadPath;
     }
 
-    const updatedBanner = await HeroBannerModel.findByIdAndUpdate(
+    const updatedBanner = await AvatarModel.findByIdAndUpdate(
       { _id: id },
       {
         title,
@@ -142,47 +150,84 @@ exports.updateHeroBanner = async (req, res) => {
       },
       { new: true, runValidators: true }
     );
-
-    ErrorHandler({
+    successHandler({
       data: updatedBanner,
-      message: avatarImg
-        ? "Avatar updated (image changed) successfully"
-        : "Avatar updated (image unchanged)",
+      message: "Avatar Banner updated successfully",
       code: 200,
       res,
       req,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to update Hero Banner",
-      error: error.message,
+    ErrorHandler({
+      error,
+      message: "Failed to update Avatar Banner",
+      code: 500,
+      res,
+      req,
     });
   }
 };
+
 /**
- * ✅ Delete Hero Banner
+ * ✅ update Avatar Banner
  */
-exports.deleteHeroBanner = async (req, res) => {
+exports.updateAvatarBannerStatus = async (req, res) => {
+  const { status } = req.body;
+  const { id } = req.params;
+
   try {
-    const banner = await HeroBannerModel.findByIdAndDelete(req.params.id);
+    const response = await AvatarModel.findByIdAndUpdate(
+      { _id: id },
+      {
+        status,
+      },
+      { new: true, runValidators: true }
+    );
+    return successHandler({
+      data: response,
+      message: "Avatar Banner status updated successfully",
+      code: 200,
+      res,
+      req,
+    });
+  } catch (error) {
+    ErrorHandler({
+      error,
+      message: "Failed to update Avatar Banner status",
+      code: 500,
+      res,
+      req,
+    });
+  }
+};
+
+/**
+ * ✅ Delete Avatar Banner
+ */
+exports.deleteAvatarBanner = async (req, res) => {
+  try {
+    const banner = await AvatarModel.findByIdAndDelete(req.params.id);
 
     if (!banner) {
       return res.status(404).json({
         success: false,
-        message: "Hero Banner not found",
+        message: "Avatar Banner not found",
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Hero Banner deleted successfully",
+    successHandler({
+      data: banner,
+      message: "Avatar Banner deleted successfully",
+      code: 200,
+      res,
+      req,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Failed to delete Hero Banner",
-      error: error.message,
+    ErrorHandler({
+      error,
+      message: "Failed to delete Avatar Banner",
+      code: 500,
+      res,
+      req,
     });
   }
 };

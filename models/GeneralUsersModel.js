@@ -48,11 +48,12 @@ const userSchema = new mongoose.Schema(
       {
         fullName: String,
         phone: String,
-        addressLine1: String,
-        addressLine2: String,
+        email: String,
+        address: String,
         city: String,
         state: String,
-        pincode: String,
+        postalCode: Number,
+        deliveryMethod: String,
         country: {
           type: String,
           default: "Bangladesh",

@@ -153,11 +153,12 @@ module.exports = {
         .populate("category", "name")
         .sort(sortOptions)
         .limit(limit * 1)
-        .skip((page - 1) * limit);
+        .skip((page - 1) * limit)
+        .exec();
 
       const total = await ProductModel.countDocuments(query);
 
-      res.json({
+      return res.json({
         success: true,
         data: products,
         pagination: {
