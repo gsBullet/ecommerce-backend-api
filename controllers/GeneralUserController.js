@@ -204,6 +204,7 @@ module.exports = {
           city,
           state,
           postalCode,
+          deliveryMethod,
           country: "Bangladesh",
         });
       }

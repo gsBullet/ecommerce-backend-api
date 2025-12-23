@@ -46,11 +46,11 @@ module.exports = {
         0
       );
       const payment = await GeneralUsersModel.findById(customerId);
-      const paymentMethodType = payment.addresses.deliveryMethod;
-      const deliveryFee = paymentMethodType === "inside-dhaka" ? 60 : 120;
+
+      const deliveryFee = payment.addresses?.[0]?.deliveryMethod === "inside-dhaka" ? 60 : 120;
 
       const finalAmount = totalAmount + deliveryFee;
-      console.log(finalAmount , parseInt(amount));
+      console.log(finalAmount , parseInt(amount),deliveryFee);
 
       if (finalAmount === parseInt(amount)) {
         const customer = await GeneralUsersModel.findById(customerId);
