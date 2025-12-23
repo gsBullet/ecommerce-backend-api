@@ -8,9 +8,29 @@ const PaymentSchema = new mongoose.Schema(
     amount: Number,
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "users",
+      ref: "generalusers",
+      required: true,
     },
-    customerProducts: [],
+    customerProducts: [
+      {
+        productId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Products",
+        },
+        id: {
+          type: String,
+        },
+        price: {
+          type: Number,
+        },
+        quantity: {
+          type: Number,
+        },
+        total: {
+          type: Number,
+        },
+      },
+    ],
     quantity: {
       type: Number,
     },

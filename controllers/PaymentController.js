@@ -47,10 +47,11 @@ module.exports = {
       );
       const payment = await GeneralUsersModel.findById(customerId);
 
-      const deliveryFee = payment.addresses?.[0]?.deliveryMethod === "inside-dhaka" ? 60 : 120;
+      const deliveryFee =
+        payment.addresses?.[0]?.deliveryMethod === "inside-dhaka" ? 60 : 120;
 
       const finalAmount = totalAmount + deliveryFee;
-      console.log(finalAmount , parseInt(amount),deliveryFee);
+      console.log(finalAmount, parseInt(amount), deliveryFee);
 
       if (finalAmount === parseInt(amount)) {
         const customer = await GeneralUsersModel.findById(customerId);
@@ -58,11 +59,12 @@ module.exports = {
           paymentMethod,
           phone,
           trxId,
-          payAmount: amount,
+          customerId,
+          payAmount: Number(amount),
           customerProducts,
           quantity: totalQuantity,
-          totalAmount,
-          address: customer.addresses.address,
+          totalAmount: finalAmount,
+          address: customer.addresses?.[0]?.address,
         });
 
         successHandler({

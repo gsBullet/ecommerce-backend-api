@@ -34,13 +34,19 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "customer",
     },
-    isActive: {
+    status: {
       type: Boolean,
       default: true,
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+
+    activeUserStatus: {
+      type: String,
+      enum: ["general", "star", "blocked", "pending"],
+      default: "pending",
     },
 
     // Shipping addresses (users can save multiple)
