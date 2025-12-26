@@ -9,8 +9,16 @@ module.exports = {
     try {
       // Logic to get pending orders
       const orders = await PaymentModel.find({ status: "pending" })
+        .sort({ createdAt: -1 })
         .populate("customerId")
-        .populate("customerProducts.productId");
+        .populate({
+          path: "customerProducts.productId",
+          populate: {
+            path: "category",
+            select: "name",
+          },
+        });
+
       successHandler({
         data: orders,
         message: "Orders retrieved successfully",
