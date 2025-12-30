@@ -1,4 +1,3 @@
-const { get } = require("mongoose");
 const PaymentModel = require("../models/PaymentModel");
 const successHandler = require("../utils/success");
 const ErrorHandler = require("../utils/error");
@@ -102,7 +101,7 @@ module.exports = {
   getCompleteOrders: async (req, res) => {
     // Logic to get complete orders
     try {
-      const orders = await PaymentModel.find({ status: "complete" });
+      const orders = await PaymentModel.find({ status: "confirmed" });
       successHandler({
         data: orders,
         message: "Orders retrieved successfully",
@@ -174,6 +173,64 @@ module.exports = {
           req,
         });
       }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to update order status",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  makeCompletedOrder: async (req, res) => {
+    try {
+      const orderId = req.params.orderId;
+      const order = await PaymentModel.findById(orderId);
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+      order.status = "confirmed";
+      await order.save();
+      successHandler({
+        data: order,
+        message: "Order status updated successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to update order status",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  makeCancellingOrder: async (req, res) => {
+    try {
+      const orderId = req.params?.orderId;
+      const order = await PaymentModel.findById(orderId);
+      if (!order) {
+        return res.status(404).json({
+          success: false,
+          message: "Order not found",
+        });
+      }
+      order.status = "cancelled";
+      await order.save();
+      successHandler({
+        data: order,
+        message: "Order status updated successfully",
+        code: 200,
+        res,
+        req,
+      });
     } catch (error) {
       ErrorHandler({
         error,
