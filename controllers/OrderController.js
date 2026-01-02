@@ -5,33 +5,66 @@ const GeneralUsersModel = require("../models/GeneralUsersModel");
 
 module.exports = {
   getPendingOrders: async (req, res) => {
+    const limit = req.query.limit || 10;
+    const currentPage = req.query.currentPage || 1;
+    const searchTerm = req.query.searchTerm || "";
+    const paymentMethod = req.query.paymentMethod || "";
+    const dateByOrders = req.query.dateByOrders || null;
+
+    console.log(`dateByOrders`, dateByOrders);
+
     try {
       // Logic to get pending orders
-      const orders = await PaymentModel.find({ status: "pending" })
-        .sort({ createdAt: -1 })
-        .populate("customerId")
-        .populate({
-          path: "customerProducts.productId",
-          populate: {
-            path: "category",
-            select: "name",
-          },
-        });
+      const filter = { status: "pending" };
+      
+      if (searchTerm) {
+      filter.$or = [
+        { trxId: { $regex: searchTerm, $options: "i" } },
+        { phone: { $regex: searchTerm, $options: "i" } }
+      ];
+      }
+      
+      if (paymentMethod) {
+      filter.paymentMethod = paymentMethod;
+      }
+      
+      if (dateByOrders) {
+      filter.createdAt = { $gte: new Date(dateByOrders) };
+      }
+
+      const orders = await PaymentModel.find(filter)
+      .sort({ createdAt: -1 })
+      .populate("customerId")
+      .populate({
+        path: "customerProducts.productId",
+        populate: {
+        path: "category",
+        select: "name",
+        },
+      })
+      .limit(limit * 1)
+      .skip((currentPage - 1) * limit)
+      .exec();
 
       successHandler({
-        data: orders,
-        message: "Orders retrieved successfully",
-        code: 200,
-        res,
-        req,
+      data: {
+        orders,
+        currentPage: parseInt(currentPage),
+        totalPages: Math.ceil(orders.length / limit),
+        totalItems: await PaymentModel.countDocuments(filter),
+      },
+      message: "Orders retrieved successfully",
+      code: 200,
+      res,
+      req,
       });
     } catch (error) {
       ErrorHandler({
-        error,
-        message: "Failed to retrieve orders",
-        code: 500,
-        res,
-        req,
+      error,
+      message: "Failed to retrieve orders",
+      code: 500,
+      res,
+      req,
       });
     }
   },
