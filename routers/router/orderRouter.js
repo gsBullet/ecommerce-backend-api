@@ -3,6 +3,7 @@ const OrderController = require("../../controllers/OrderController");
 const router = express.Router();
 
 router.get("/orders/pending-orders", OrderController.getPendingOrders);
+router.get("/orders/pending-orders-by-date", OrderController.getPendingOrdersByDate);
 router.get("/orders/cancelled-orders", OrderController.getCancelledOrders);
 router.get("/orders/delivered-orders", OrderController.getDeliveredOrders);
 router.get("/orders/return-orders", OrderController.getReturnOrders);
