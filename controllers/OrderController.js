@@ -209,10 +209,90 @@ module.exports = {
 
   getCompleteOrders: async (req, res) => {
     // Logic to get complete orders
+    const limit = req.query.limit || 10;
+    const currentPage = req.query.currentPage || 1;
+    const searchTerm = req.query.searchTerm || "";
+    const paymentMethod = req.query.paymentMethod || "";
+    const dateByOrders = req.query.dateByOrders || null;
     try {
-      const orders = await PaymentModel.find({ status: "confirmed" });
+      const filter = { status: "confirmed" };
+
+      if (searchTerm) {
+        filter.$or = [
+          { trxId: { $regex: searchTerm, $options: "i" } },
+          { phone: { $regex: searchTerm, $options: "i" } },
+        ];
+      }
+
+      if (paymentMethod) {
+        filter.paymentMethod = paymentMethod;
+      }
+
+      if (dateByOrders) {
+        const startDate = new Date(dateByOrders);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(dateByOrders);
+        endDate.setHours(23, 59, 59, 999);
+
+        filter.createdAt = {
+          $gte: startDate,
+          $lte: endDate,
+        };
+      }
+      const orders = await PaymentModel.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("customerId")
+        .populate({
+          path: "customerProducts.productId",
+          populate: {
+            path: "category",
+            select: "name",
+          },
+        })
+        .limit(limit * 1)
+        .skip((currentPage - 1) * limit)
+        .exec();
       successHandler({
-        data: orders,
+        data: {
+          orders,
+          currentPage,
+          totalPages: Math.ceil(orders.length / limit),
+          totalItems: await PaymentModel.countDocuments(filter),
+        },
+        message: "Orders retrieved successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to retrieve orders",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getCompleteOrdersByDate: async (req, res) => {
+    try {
+      const filter = { status: "confirmed" };
+      const orders = await PaymentModel.find(filter)
+        .sort({ createdAt: -1 })
+        .populate("customerId")
+        .populate({
+          path: "customerProducts.productId",
+          populate: {
+            path: "category",
+            select: "name",
+          },
+        })
+        .exec();
+      successHandler({
+        data: {
+          orders,
+        },
         message: "Orders retrieved successfully",
         code: 200,
         res,

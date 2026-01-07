@@ -8,6 +8,7 @@ router.get("/orders/cancelled-orders", OrderController.getCancelledOrders);
 router.get("/orders/delivered-orders", OrderController.getDeliveredOrders);
 router.get("/orders/return-orders", OrderController.getReturnOrders);
 router.get("/orders/get-completed-orders", OrderController.getCompleteOrders);
+router.get("/orders/get-completed-orders-by-date", OrderController.getCompleteOrdersByDate);
 router.get("/orders/order-details", OrderController.getOrderDetails);
 router.post(
   "/orders/update-order-status/:orderId",
