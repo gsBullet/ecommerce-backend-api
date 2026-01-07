@@ -8,6 +8,7 @@ router.get(
   OrderController.getPendingOrdersByDate
 );
 router.get("/orders/cancelled-orders", OrderController.getCancelledOrders);
+router.get("/orders/cancelled-orders-by-date", OrderController.getCancelledOrdersByDate);
 router.get("/orders/delivered-orders", OrderController.getDeliveredOrders);
 router.get("/orders/return-orders", OrderController.getReturnOrders);
 router.get("/orders/get-completed-orders", OrderController.getCompleteOrders);
@@ -36,5 +37,10 @@ router.get(
   "/orders/cancelling-orders/:orderId",
   OrderController.makeCancellingOrder
 );
+router.get(
+  "/orders/delete-order-by-admin/:orderId",
+  OrderController.deleteOrderByAdmin
+);
+
 
 module.exports = () => router;

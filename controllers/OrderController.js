@@ -108,10 +108,85 @@ module.exports = {
   },
   getCancelledOrders: async (req, res) => {
     // Logic to get cancelled orders
+    const limit = req.query.limit || 10;
+    const currentPage = req.query.currentPage || 1;
+    const searchTerm = req.query.searchTerm || "";
+    const paymentMethod = req.query.paymentMethod || "";
+    const dateByOrders = req.query.dateByOrders || null;
+
     try {
-      const orders = await PaymentModel.find({ status: "cancelled" });
+      const filter = { status: "cancelled" };
+
+      if (searchTerm) {
+        filter.$or = [
+          { trxId: { $regex: searchTerm, $options: "i" } },
+          { phone: { $regex: searchTerm, $options: "i" } },
+        ];
+      }
+
+      if (paymentMethod) {
+        filter.paymentMethod = paymentMethod;
+      }
+
+      if (dateByOrders) {
+        const startDate = new Date(dateByOrders);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(dateByOrders);
+        endDate.setHours(23, 59, 59, 999);
+
+        filter.updatedAt = {
+          $gte: startDate,
+          $lte: endDate,
+        };
+      }
+
+      const orders = await PaymentModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .populate("customerId")
+        .populate({
+          path: "customerProducts.productId",
+          populate: {
+            path: "category",
+            select: "name",
+          },
+        })
+        .limit(limit * 1)
+        .skip((currentPage - 1) * limit)
+        .exec();
+      const totalItems = await PaymentModel.countDocuments(filter);
+
       successHandler({
-        data: orders,
+        data: {
+          orders,
+          currentPage: parseInt(currentPage),
+          totalPages: Math.ceil(totalItems / limit),
+          totalItems,
+        },
+        message: "Orders cancelled fatch successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to retrieve orders",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getCancelledOrdersByDate: async (req, res) => {
+    // Logic to get cancelled orders
+    try {
+      const orders = await PaymentModel.find({ status: "cancelled" })
+        .sort({ updatedAt: -1 })
+        .select("updatedAt _id")
+        .exec();
+      successHandler({
+        data: { orders },
         message: "Orders retrieved successfully",
         code: 200,
         res,
@@ -440,7 +515,7 @@ module.exports = {
           message: "Order not found",
         });
       }
-      order.status = "delivered";
+      order.status = "returned";
       await order.save();
       successHandler({
         data: order,
@@ -473,7 +548,7 @@ module.exports = {
       order.status = "cancelled";
       await order.save();
       successHandler({
-        data: order,
+        data: { order },
         message: "Order status updated successfully",
         code: 200,
         res,
@@ -489,4 +564,27 @@ module.exports = {
       });
     }
   },
+  deleteOrderByAdmin: async(req,res)=>{
+    // console.log(`req.params.orderIdreq.params.orderId`, );
+    // return
+    try {
+      const orderId = req.params.orderId;
+     const response= await PaymentModel.findByIdAndDelete(orderId);
+      successHandler({
+        data:response,
+        message: "Order deleted successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to delete order",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  }
 };
