@@ -167,8 +167,16 @@ module.exports = {
   },
   updateCustomerUserInfo: async (req, res) => {
     try {
-      const { fullName, phone, email, address, state, postalCode, city ,deliveryMethod} =
-        req.body.formData;
+      const {
+        fullName,
+        phone,
+        email,
+        address,
+        state,
+        postalCode,
+        city,
+        deliveryMethod,
+      } = req.body.formData;
 
       const userId = req.params.userId;
 
@@ -222,6 +230,48 @@ module.exports = {
       ErrorHandler({
         error: err,
         message: "Failed to update user info",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getAllPendingGeneralUserList: async (req, res) => {
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.search || "";
+    try {
+      const filter = {status: "pending"};
+      if(search){
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } },
+        ];
+      }
+      const users = await GeneralUsersModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .skip(skip)
+        .exec();
+      const count = await GeneralUsersModel.countDocuments();
+      successHandler({
+        data:{
+          users,
+          currentPage: page,
+          totalPages: Math.ceil(count / limit),
+          totalItems: count
+        },
+        message: "General User List fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to fetch General User List",
         code: 500,
         res,
         req,
