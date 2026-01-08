@@ -297,10 +297,83 @@ module.exports = {
     }
   },
   getReturnOrders: async (req, res) => {
+    // Logic to get delivered orders
+    const limit = req.query.limit || 10;
+    const currentPage = req.query.currentPage || 1;
+    const searchTerm = req.query.searchTerm || "";
+    const paymentMethod = req.query.paymentMethod || "";
+    const dateByOrders = req.query.dateByOrders || null;
     try {
-      const orders = await PaymentModel.find({ status: "return" });
+      const filter = { status: "returned" };
+
+      if (searchTerm) {
+        filter.$or = [
+          { trxId: { $regex: searchTerm, $options: "i" } },
+          { phone: { $regex: searchTerm, $options: "i" } },
+        ];
+      }
+
+      if (paymentMethod) {
+        filter.paymentMethod = paymentMethod;
+      }
+
+      if (dateByOrders) {
+        const startDate = new Date(dateByOrders);
+        startDate.setHours(0, 0, 0, 0);
+
+        const endDate = new Date(dateByOrders);
+        endDate.setHours(23, 59, 59, 999);
+
+        filter.updatedAt = {
+          $gte: startDate,
+          $lte: endDate,
+        };
+      }
+      const orders = await PaymentModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .populate("customerId")
+        .populate({
+          path: "customerProducts.productId",
+          populate: {
+            path: "category",
+            select: "name",
+          },
+        })
+        .limit(limit * 1)
+        .skip((currentPage - 1) * limit)
+        .exec();
       successHandler({
-        data: orders,
+        data: {
+          orders,
+          currentPage: parseInt(currentPage),
+          totalPages: Math.ceil(orders.length / limit),
+          totalItems: orders.length,
+        },
+        message: "Orders returned",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to returned orders",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getReturnOrdersByDate: async (req, res) => {
+    // Logic to get delivered orders
+    try {
+      const orders = await PaymentModel.find({ status: "returned" })
+        .sort({
+          updatedAt: -1,
+        })
+        .select("updatedAt _id");
+      successHandler({
+        data: { orders },
         message: "Orders retrieved successfully",
         code: 200,
         res,
@@ -316,7 +389,6 @@ module.exports = {
       });
     }
   },
-
   getCompleteOrders: async (req, res) => {
     // Logic to get complete orders
     const limit = req.query.limit || 10;
@@ -564,14 +636,14 @@ module.exports = {
       });
     }
   },
-  deleteOrderByAdmin: async(req,res)=>{
+  deleteOrderByAdmin: async (req, res) => {
     // console.log(`req.params.orderIdreq.params.orderId`, );
     // return
     try {
       const orderId = req.params.orderId;
-     const response= await PaymentModel.findByIdAndDelete(orderId);
+      const response = await PaymentModel.findByIdAndDelete(orderId);
       successHandler({
-        data:response,
+        data: response,
         message: "Order deleted successfully",
         code: 200,
         res,
@@ -586,5 +658,5 @@ module.exports = {
         req,
       });
     }
-  }
+  },
 };

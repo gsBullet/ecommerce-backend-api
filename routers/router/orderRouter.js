@@ -11,6 +11,7 @@ router.get("/orders/cancelled-orders", OrderController.getCancelledOrders);
 router.get("/orders/cancelled-orders-by-date", OrderController.getCancelledOrdersByDate);
 router.get("/orders/delivered-orders", OrderController.getDeliveredOrders);
 router.get("/orders/return-orders", OrderController.getReturnOrders);
+router.get("/orders/return-orders-by-date", OrderController.getReturnOrdersByDate);
 router.get("/orders/get-completed-orders", OrderController.getCompleteOrders);
 router.get(
   "/orders/get-completed-orders-by-date",
