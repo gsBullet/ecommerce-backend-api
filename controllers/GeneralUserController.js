@@ -4,6 +4,7 @@ const GeneralUsersModel = require("../models/GeneralUsersModel");
 const successHandler = require("../utils/success");
 const ErrorHandler = require("../utils/error");
 const bcrypt = require("bcrypt");
+const PaymentModel = require("../models/PaymentModel");
 const saltRounds = 12;
 const jwtSecret = "842a2780-bb8e-482c-b22c-823084e1f054";
 
@@ -240,10 +241,10 @@ module.exports = {
     const limit = req.query.limit || 10;
     const page = req.query.page || 1;
     const skip = (page - 1) * limit;
-    const search = req.query.search || "";
+    const search = req.query.searchTerm || "";
     try {
-      const filter = {status: "pending"};
-      if(search){
+      const filter = { activeUserStatus: "pending" };
+      if (search) {
         filter.$or = [
           { name: { $regex: search, $options: "i" } },
           { email: { $regex: search, $options: "i" } },
@@ -251,17 +252,34 @@ module.exports = {
         ];
       }
       const users = await GeneralUsersModel.find(filter)
+
         .sort({ updatedAt: -1 })
         .limit(limit)
         .skip(skip)
         .exec();
       const count = await GeneralUsersModel.countDocuments();
+      const payments = await PaymentModel.find();
+      const usersWithPayments = users.map((user) => {
+        const totalPayment = payments.reduce((total, payment) => {
+          return payment.customerId?.toString() === user._id.toString()
+            ? total + 1
+            : total;
+        }, 0);
+
+        return {
+          ...user.toObject(),
+          totalPayment,
+        };
+      });
+
+      // console.log(usersWithPayments);
+
       successHandler({
-        data:{
-          users,
+        data: {
+          users:usersWithPayments,
           currentPage: page,
           totalPages: Math.ceil(count / limit),
-          totalItems: count
+          totalItems: count,
         },
         message: "General User List fetched successfully",
         code: 200,
@@ -278,4 +296,5 @@ module.exports = {
       });
     }
   },
+  changeGeneralUserStatus: async (req, res) => {},
 };
