@@ -11,4 +11,8 @@ router.get(
     "/general-user/change-user-status/:userId",
     GeneralUserController.changeGeneralUserStatus
 );
+router.get(
+    "/general-users/get-all-payment-order-by-user/:userId",
+    GeneralUserController.getAllPaymentOrdersByUser
+);
 module.exports = () => router;

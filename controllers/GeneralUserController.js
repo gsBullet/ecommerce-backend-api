@@ -5,6 +5,7 @@ const successHandler = require("../utils/success");
 const ErrorHandler = require("../utils/error");
 const bcrypt = require("bcrypt");
 const PaymentModel = require("../models/PaymentModel");
+const { default: mongoose } = require("mongoose");
 const saltRounds = 12;
 const jwtSecret = "842a2780-bb8e-482c-b22c-823084e1f054";
 
@@ -252,12 +253,11 @@ module.exports = {
         ];
       }
       const users = await GeneralUsersModel.find(filter)
-
         .sort({ updatedAt: -1 })
         .limit(limit)
         .skip(skip)
         .exec();
-      const count = await GeneralUsersModel.countDocuments();
+      const count = await GeneralUsersModel.countDocuments(filter);
       const payments = await PaymentModel.find();
       const usersWithPayments = users.map((user) => {
         const totalPayment = payments.reduce((total, payment) => {
@@ -276,7 +276,7 @@ module.exports = {
 
       successHandler({
         data: {
-          users:usersWithPayments,
+          users: usersWithPayments,
           currentPage: page,
           totalPages: Math.ceil(count / limit),
           totalItems: count,
@@ -297,4 +297,88 @@ module.exports = {
     }
   },
   changeGeneralUserStatus: async (req, res) => {},
+  getAllPaymentOrdersByUser: async (req, res) => {
+    try {
+      const userId = req.params.userId;
+
+      const limit = Number(req.query.limit) || 10;
+      const page = Number(req.query.currentPage) || 1;
+      const skip = (page - 1) * limit;
+
+      const search = req.query.searchTerm || "";
+      const activeTab = req.query.activeTab || "all";
+
+      const customerObjectId = new mongoose.Types.ObjectId(userId);
+
+      const baseFilter = { customerId: customerObjectId };
+
+      if (search) {
+        baseFilter.$or = [
+          { trxId: { $regex: search, $options: "i" } },
+          { paymentMethod: { $regex: search, $options: "i" } },
+        ];
+      }
+
+      // 🔥 1️⃣ STATUS COUNT (ALL STATUSES)
+      const statusAggregation = await PaymentModel.aggregate([
+        { $match: baseFilter },
+        {
+          $group: {
+            _id: "$status",
+            count: { $sum: 1 },
+          },
+        },
+      ]);
+
+      const statusCount = {
+        all: 0,
+        pending: 0,
+        confirmed: 0,
+        delivered: 0,
+        cancelled: 0,
+        returned: 0,
+      };
+
+      statusAggregation.forEach((item) => {
+        statusCount[item._id] = item.count;
+        statusCount.all += item.count;
+      });
+
+      // 🔥 2️⃣ FILTER FOR CURRENT TAB
+      const orderFilter =
+        activeTab === "all" ? baseFilter : { ...baseFilter, status: activeTab };
+
+      // 🔥 3️⃣ ORDERS + COUNT
+      const [orders, totalItems] = await Promise.all([
+        PaymentModel.find(orderFilter)
+          .sort({ updatedAt: -1 })
+          .skip(skip)
+          .limit(limit),
+
+        PaymentModel.countDocuments(orderFilter),
+      ]);
+
+      successHandler({
+        data: {
+          orders,
+          totalItems,
+          currentPage: page,
+          totalPages: Math.ceil(totalItems / limit),
+          statusCount,
+        },
+        message: "Orders fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to fetch orders",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
 };
