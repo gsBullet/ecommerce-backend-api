@@ -296,6 +296,180 @@ module.exports = {
       });
     }
   },
+  getAllGeneralVerifyUserList: async (req, res) => {
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.searchTerm || "";
+    try {
+      const filter = { activeUserStatus: "verify" };
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } },
+        ];
+      }
+      const users = await GeneralUsersModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .skip(skip)
+        .exec();
+      const count = await GeneralUsersModel.countDocuments(filter);
+      const payments = await PaymentModel.find();
+      const usersWithPayments = users.map((user) => {
+        const totalPayment = payments.reduce((total, payment) => {
+          return payment.customerId?.toString() === user._id.toString()
+            ? total + 1
+            : total;
+        }, 0);
+
+        return {
+          ...user.toObject(),
+          totalPayment,
+        };
+      });
+
+      // console.log(usersWithPayments);
+
+      successHandler({
+        data: {
+          users: usersWithPayments,
+          currentPage: page,
+          totalPages: Math.ceil(count / limit),
+          totalItems: count,
+        },
+        message: "verify User List fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to fetch General User List",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getAllGeneralStarUserList: async (req, res) => {
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.searchTerm || "";
+    try {
+      const filter = { activeUserStatus: "star" };
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } },
+        ];
+      }
+      const users = await GeneralUsersModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .skip(skip)
+        .exec();
+      const count = await GeneralUsersModel.countDocuments(filter);
+      const payments = await PaymentModel.find();
+      const usersWithPayments = users.map((user) => {
+        const totalPayment = payments.reduce((total, payment) => {
+          return payment.customerId?.toString() === user._id.toString()
+            ? total + 1
+            : total;
+        }, 0);
+
+        return {
+          ...user.toObject(),
+          totalPayment,
+        };
+      });
+
+      // console.log(usersWithPayments);
+
+      successHandler({
+        data: {
+          users: usersWithPayments,
+          currentPage: page,
+          totalPages: Math.ceil(count / limit),
+          totalItems: count,
+        },
+        message: "verify User List fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to fetch General User List",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getAllGeneralBlockUserList: async (req, res) => {
+    const limit = req.query.limit || 10;
+    const page = req.query.page || 1;
+    const skip = (page - 1) * limit;
+    const search = req.query.searchTerm || "";
+    try {
+      const filter = { activeUserStatus: "block" };
+      if (search) {
+        filter.$or = [
+          { name: { $regex: search, $options: "i" } },
+          { email: { $regex: search, $options: "i" } },
+          { phone: { $regex: search, $options: "i" } },
+        ];
+      }
+      const users = await GeneralUsersModel.find(filter)
+        .sort({ updatedAt: -1 })
+        .limit(limit)
+        .skip(skip)
+        .exec();
+      const count = await GeneralUsersModel.countDocuments(filter);
+      const payments = await PaymentModel.find();
+      const usersWithPayments = users.map((user) => {
+        const totalPayment = payments.reduce((total, payment) => {
+          return payment.customerId?.toString() === user._id.toString()
+            ? total + 1
+            : total;
+        }, 0);
+
+        return {
+          ...user.toObject(),
+          totalPayment,
+        };
+      });
+
+      // console.log(usersWithPayments);
+
+      successHandler({
+        data: {
+          users: usersWithPayments,
+          currentPage: page,
+          totalPages: Math.ceil(count / limit),
+          totalItems: count,
+        },
+        message: "verify User List fetched successfully",
+        code: 200,
+        res,
+        req,
+      });
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to fetch General User List",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
   changeGeneralUserStatus: async (req, res) => {},
   getAllPaymentOrdersByUser: async (req, res) => {
     try {
