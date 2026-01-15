@@ -42,14 +42,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
-
+    nid: {
+      type: String,
+      default: "https://cdn-icons-png.flaticon.com/512/149/149071.png",
+    },
     activeUserStatus: {
       type: String,
-      enum: ["general", "star", "blocked", "pending"],
+      enum: ["star", "blocked", "pending", "verified"],
       default: "pending",
     },
 
-    // Shipping addresses (users can save multiple)
     addresses: [
       {
         fullName: String,

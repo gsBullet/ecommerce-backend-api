@@ -24,7 +24,7 @@ router.get(
 );
 
 router.get(
-  "/general-user/change-user-status/:userId",
+  "/general-users/change-general-user-status-by-pending/:userId/:status/:isVerified",
   GeneralUserController.changeGeneralUserStatus
 );
 router.get(

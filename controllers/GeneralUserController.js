@@ -302,7 +302,7 @@ module.exports = {
     const skip = (page - 1) * limit;
     const search = req.query.searchTerm || "";
     try {
-      const filter = { activeUserStatus: "verify" };
+      const filter = { activeUserStatus: "verified" };
       if (search) {
         filter.$or = [
           { name: { $regex: search, $options: "i" } },
@@ -470,7 +470,42 @@ module.exports = {
       });
     }
   },
-  changeGeneralUserStatus: async (req, res) => {},
+  changeGeneralUserStatus: async (req, res) => {
+    const { userId, status, isVerified } = req.params;
+    try {
+      const user = await GeneralUsersModel.findOne({ _id: userId });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      if (isVerified) {
+        user.isVerified = isVerified;
+        user.activeUserStatus = status;
+        await user.save();
+        successHandler({
+          data: user,
+          message: "User status updated successfully",
+          code: 200,
+          res,
+          req,
+        });
+      } else {
+        ErrorHandler({
+          message: "User Not Verified",
+          code: 500,
+          res,
+          req,
+        });
+      }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Failed to update User status",
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
   getAllPaymentOrdersByUser: async (req, res) => {
     try {
       const userId = req.params.userId;
