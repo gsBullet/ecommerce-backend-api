@@ -418,7 +418,7 @@ module.exports = {
     const skip = (page - 1) * limit;
     const search = req.query.searchTerm || "";
     try {
-      const filter = { activeUserStatus: "block" };
+      const filter = { activeUserStatus: "blocked" };
       if (search) {
         filter.$or = [
           { name: { $regex: search, $options: "i" } },
@@ -477,20 +477,53 @@ module.exports = {
       if (!user) {
         return res.status(404).json({ message: "User not found" });
       }
-      if (isVerified) {
+      if (isVerified && status === "verified") {
         user.isVerified = isVerified;
         user.activeUserStatus = status;
         await user.save();
         successHandler({
           data: user,
-          message: "User status updated successfully",
+          message: "User verified successfully",
+          code: 200,
+          res,
+          req,
+        });
+      } else if (isVerified && status === "star") {
+        user.isVerified = isVerified;
+        user.activeUserStatus = status;
+        await user.save();
+        successHandler({
+          data: user,
+          message: "User verified & star successfully",
+          code: 200,
+          res,
+          req,
+        });
+      } else if (isVerified === false && status === "blocked") {
+        user.isVerified = isVerified;
+        user.activeUserStatus = status;
+        await user.save();
+        successHandler({
+          data: user,
+          message: "User blocked successfully",
+          code: 200,
+          res,
+          req,
+        });
+      } else if (isVerified && status === "blocked") {
+        user.isVerified = isVerified;
+        user.activeUserStatus = status;
+        await user.save();
+        successHandler({
+          data: user,
+          message: "User blocked successfully",
           code: 200,
           res,
           req,
         });
       } else {
         ErrorHandler({
-          message: "User Not Verified",
+          message: "User Not Found",
           code: 500,
           res,
           req,
