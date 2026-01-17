@@ -35,12 +35,12 @@ module.exports = {
       const search = req.query.customerSearch?.trim();
 
       // 🔴 No search → send null
-      if (!search) {
-        return res.status(200).json({
-          message: "No search keyword provided",
-          data: null,
-        });
-      }
+    //   if (!search) {
+    //     return res.status(200).json({
+    //       message: "No search keyword provided",
+    //       data: null,
+    //     });
+    //   }
 
       const data = await GeneralUsersModel.find({
         activeUserStatus: { $ne: "blocked" }, // 🔴 exclude blocked
