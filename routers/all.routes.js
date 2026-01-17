@@ -10,6 +10,7 @@ const avatarRouter = require("./router/avatarRouter");
 const paymentRouter = require("./router/paymentRouter");
 const orderRouter = require("./router/orderRouter");
 const generalUserRouter = require("./router/generalUserRouter");
+const promoCodeRouter = require("./router/promoCodeRouter");
 const router = express.Router();
 
 router.use(websiteRouter());
@@ -23,5 +24,6 @@ router.use(avatarRouter());
 router.use(paymentRouter());
 router.use(orderRouter())
 router.use(generalUserRouter())
+router.use(promoCodeRouter())
 
 module.exports = router;

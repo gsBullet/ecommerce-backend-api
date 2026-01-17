@@ -29,6 +29,10 @@ const productSchema = new mongoose.Schema(
       ref: "Categories",
       required: true,
     },
+    isDiscountEligible: {
+      type: Boolean,
+      default: true,
+    },
     thumbnail: {
       type: String,
       required: true,

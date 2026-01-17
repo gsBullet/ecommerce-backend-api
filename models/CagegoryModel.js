@@ -1,4 +1,3 @@
-const e = require("express");
 const mongoose = require("mongoose");
 
 const categorySchema = new mongoose.Schema(
@@ -11,14 +10,15 @@ const categorySchema = new mongoose.Schema(
     status: {
       type: Boolean,
       default: true,
-      enum: [true, false],
+    },
+
+    // 🔥 NEW FIELD
+    discountEligible: {
+      type: Boolean,
+      default: false, // only true categories will get discount
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
-const CategoryModel = mongoose.model("Categories", categorySchema);
-
-module.exports = CategoryModel;
+module.exports = mongoose.model("Categories", categorySchema);

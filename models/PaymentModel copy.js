@@ -5,44 +5,44 @@ const PaymentSchema = new mongoose.Schema(
     paymentMethod: String,
     phone: String,
     trxId: String,
-
+    amount: Number,
     customerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "generalusers",
       required: true,
     },
-
     customerProducts: [
       {
         productId: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Products",
         },
-        categoryId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Categories",
+        id: {
+          type: String,
         },
-        price: Number,
-        quantity: Number,
-        total: Number,
+        price: {
+          type: Number,
+        },
+        quantity: {
+          type: Number,
+        },
+        total: {
+          type: Number,
+        },
       },
     ],
-
-    totalAmount: Number, // before discount
-
-    // 🔥 NEW FIELDS
-    discountPercentage: {
+    quantity: {
       type: Number,
-      default: 0,
     },
-    discountAmount: {
+    payAmount: {
       type: Number,
-      default: 0,
     },
-    payAmount: Number, // after discount
-
-    address: String,
-
+    totalAmount: {
+      type: Number,
+    },
+    address: {
+      type: String,
+    },
     status: {
       type: String,
       default: "pending",
