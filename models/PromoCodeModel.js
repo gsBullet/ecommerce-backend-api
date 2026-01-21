@@ -14,6 +14,7 @@ const PromoCodeSchema = new mongoose.Schema(
       type: String,
       required: true,
       enum: ["flat", "percentage"],
+      default: "flat",
     },
     discountValue: {
       type: Number,
@@ -50,7 +51,7 @@ const PromoCodeSchema = new mongoose.Schema(
     },
     applicableCategories: [{
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Category",
+      ref: "Categories",
     }],
     applicableProducts: [{
       type: mongoose.Schema.Types.ObjectId,
@@ -68,4 +69,4 @@ const PromoCodeSchema = new mongoose.Schema(
 PromoCodeSchema.index({ code: 1, isActive: 1 });
 PromoCodeSchema.index({ validUntil: 1 });
 
-module.exports = mongoose.model("PromoCode", PromoCodeSchema);
+module.exports = mongoose.model("promocodes", PromoCodeSchema);

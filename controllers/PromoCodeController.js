@@ -1,11 +1,103 @@
 const CategoryModel = require("../models/CagegoryModel");
 const GeneralUsersModel = require("../models/GeneralUsersModel");
 const ProductModel = require("../models/ProductModel");
+const PromoCodeModel = require("../models/PromoCodeModel");
+const ErrorHandler = require("../utils/error");
+const successHandler = require("../utils/success");
 
 module.exports = {
   createPromoCode: async (req, res) => {
     try {
-    } catch (error) {}
+      let {
+        code,
+        discountType,
+        discountValue,
+        maxDiscount,
+        minPurchaseAmount,
+        validFrom,
+        validUntil,
+        usageLimit,
+        isActive,
+        applicableProducts,
+        applicableCategories,
+        customerSpecific,
+      } = req.body;
+
+      // ---- CAST TYPES ----
+      discountValue = Number(discountValue);
+      maxDiscount = maxDiscount ? Number(maxDiscount) : null;
+      minPurchaseAmount = Number(minPurchaseAmount || 0);
+      usageLimit = usageLimit ? Number(usageLimit) : null;
+      isActive = isActive === "true" || isActive === true;
+
+      validFrom = new Date(validFrom);
+      validUntil = new Date(validUntil);
+
+      if (!Array.isArray(applicableProducts))
+        applicableProducts = applicableProducts ? [applicableProducts] : [];
+
+      if (!Array.isArray(applicableCategories))
+        applicableCategories = applicableCategories
+          ? [applicableCategories]
+          : [];
+
+      if (!Array.isArray(customerSpecific))
+        customerSpecific = customerSpecific ? [customerSpecific] : [];
+
+    
+
+      // ---- CHECK DUPLICATE CODE ----
+      const exists = await PromoCodeModel.findOne({ code });
+      if (exists) {
+        ErrorHandler({
+          error: exists.code,
+          message: "Promo code already exists",
+          code: 400,
+          res,
+          req,
+          req,
+        });
+      }
+      // ---- CREATE ----
+      const promo = await PromoCodeModel.create({
+        code,
+        discountType,
+        discountValue,
+        maxDiscount,
+        minPurchaseAmount,
+        validFrom,
+        validUntil,
+        usageLimit,
+        isActive,
+        applicableProducts,
+        applicableCategories,
+        customerSpecific,
+      });
+      if (promo) {
+        successHandler({
+          message: "Promo code created successfully",
+          data: promo,
+          res,
+          req,
+        });
+      } else {
+        ErrorHandler({
+          error: "Creation failed",
+          message: "Failed to create promo code",
+          code: 500,
+          res,
+          req,
+        });
+      }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: "Server error",
+        code: 500,
+        res,
+        req,
+      });
+    }
   },
   updatePromoCode: async (req, res) => {},
   deletePromoCode: async (req, res) => {},
@@ -35,12 +127,12 @@ module.exports = {
       const search = req.query.customerSearch?.trim();
 
       // 🔴 No search → send null
-    //   if (!search) {
-    //     return res.status(200).json({
-    //       message: "No search keyword provided",
-    //       data: null,
-    //     });
-    //   }
+      //   if (!search) {
+      //     return res.status(200).json({
+      //       message: "No search keyword provided",
+      //       data: null,
+      //     });
+      //   }
 
       const data = await GeneralUsersModel.find({
         activeUserStatus: { $ne: "blocked" }, // 🔴 exclude blocked

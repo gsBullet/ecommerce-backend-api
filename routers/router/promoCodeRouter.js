@@ -2,7 +2,7 @@ const express = require("express");
 const PromoCodeController = require("../../controllers/PromoCodeController");
 const router = express.Router();
 
-router.post("/promo-code/add-promo-code", PromoCodeController.createPromoCode);
+router.post("/promo-code/add-promo-code-by-admin", PromoCodeController.createPromoCode);
 
 router.post(
   "/promo-code/update-promo-code/:promoCodeId",
