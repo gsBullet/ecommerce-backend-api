@@ -77,6 +77,7 @@ module.exports = {
         successHandler({
           message: "Promo code created successfully",
           data: promo,
+          code: 200,
           res,
           req,
         });
