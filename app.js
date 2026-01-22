@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 9000;
 
 const corsOptions = {
   origin: "*",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed HTTP methods
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Allowed HTTP methods
   allowedHeaders: [
     "Origin",
     "X-Requested-With",

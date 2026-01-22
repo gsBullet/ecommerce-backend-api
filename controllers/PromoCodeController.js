@@ -25,7 +25,12 @@ module.exports = {
 
       // ---- CAST TYPES ----
       discountValue = Number(discountValue);
-      maxDiscount = maxDiscount ? Number(maxDiscount) : null;
+      maxDiscount =
+        maxDiscount === "null" ||
+        maxDiscount === undefined ||
+        maxDiscount === ""
+          ? null
+          : Number(maxDiscount);
       minPurchaseAmount = Number(minPurchaseAmount || 0);
       usageLimit = usageLimit ? Number(usageLimit) : null;
       isActive = isActive === "true" || isActive === true;
@@ -43,8 +48,6 @@ module.exports = {
 
       if (!Array.isArray(customerSpecific))
         customerSpecific = customerSpecific ? [customerSpecific] : [];
-
-    
 
       // ---- CHECK DUPLICATE CODE ----
       const exists = await PromoCodeModel.findOne({ code });
@@ -93,7 +96,7 @@ module.exports = {
     } catch (error) {
       ErrorHandler({
         error,
-        message: "Server error",
+        message: error._message,
         code: 500,
         res,
         req,
@@ -102,7 +105,78 @@ module.exports = {
   },
   updatePromoCode: async (req, res) => {},
   deletePromoCode: async (req, res) => {},
-  getAllPromoCodeList: async (req, res) => {},
+  updatePromoCodeStatus: async (req, res) => {
+    const { promoCodeId } = req.params;
+    const { isActive } = req.body;
+
+    try {
+      const promo = await PromoCodeModel.findByIdAndUpdate(
+        promoCodeId,
+        { isActive },
+        { new: true },
+      ).exec();
+
+      if (promo) {
+        successHandler({
+          message: "Promo code status updated successfully",
+          data: promo,
+          code: 200,
+          res,
+          req,
+        });
+      } else {
+        ErrorHandler({
+          error: "Update failed",
+          message: "Failed to update promo code status",
+          code: 500,
+          res,
+          req,
+        });
+      }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: error._message,
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  getAllPromoCodeList: async (req, res) => {
+    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1;
+    const search = req.query.search || "";
+
+    const filter = {};
+    if (search) {
+      filter.$or = [
+        { code: { $regex: search, $options: "i" } },
+        // { discountType: { $regex: search, $options: "i" } },
+        // { discountValue: { $regex: search, $options: "i" } },
+        // { maxDiscount: { $regex: search, $options: "i" } },
+        // { minPurchaseAmount: { $regex: search, $options: "i" } },
+        // { validFrom: { $regex: search, $options: "i" } },
+        // { validUntil: { $regex: search, $options: "i" } },
+        // { usageLimit: { $regex: search, $options: "i" } },
+        // { isActive: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const promoCodes = await PromoCodeModel.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .exec();
+    const totalPromoCodes = await PromoCodeModel.countDocuments(filter);
+    successHandler({
+      message: "Get Promo Code List",
+      data: { promoCodes, totalPromoCodes, limit, totalPages: Math.ceil(totalPromoCodes / limit) },
+      code: 200,
+      res,
+      req,
+    });
+  },
   getAllCategoryForPromoCode: async (req, res) => {
     const data = await CategoryModel.find({ status: true })
       .sort({ updatedAt: -1 })

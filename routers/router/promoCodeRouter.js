@@ -2,33 +2,40 @@ const express = require("express");
 const PromoCodeController = require("../../controllers/PromoCodeController");
 const router = express.Router();
 
-router.post("/promo-code/add-promo-code-by-admin", PromoCodeController.createPromoCode);
+router.post(
+  "/promo-code/add-promo-code-by-admin",
+  PromoCodeController.createPromoCode,
+);
 
 router.post(
   "/promo-code/update-promo-code/:promoCodeId",
-  PromoCodeController.updatePromoCode
+  PromoCodeController.updatePromoCode,
+);
+router.patch(
+  "/promo-codes/change-promo-status/:promoCodeId",
+  PromoCodeController.updatePromoCodeStatus,
 );
 
 router.get(
   "/promo-code/delete-promo-code/:promoCodeId",
-  PromoCodeController.deletePromoCode
+  PromoCodeController.deletePromoCode,
 );
 
 router.get(
-  "/promo-code/get-all-promo-code",
-  PromoCodeController.getAllPromoCodeList
+  "/promo-codes/get-all-promo-codes",
+  PromoCodeController.getAllPromoCodeList,
 );
 router.get(
   "/category/all-category-for-discount",
-  PromoCodeController.getAllCategoryForPromoCode
+  PromoCodeController.getAllCategoryForPromoCode,
 );
 router.get(
   "/product/all-products-for-discount",
-  PromoCodeController.getAllProductsForPromoCode
+  PromoCodeController.getAllProductsForPromoCode,
 );
 router.get(
   "/general-users/discount-for-users",
-  PromoCodeController.getAllUsersForDiscount
+  PromoCodeController.getAllUsersForDiscount,
 );
 
 module.exports = () => router;
