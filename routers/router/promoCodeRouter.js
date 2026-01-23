@@ -8,7 +8,7 @@ router.post(
 );
 
 router.post(
-  "/promo-code/update-promo-code/:promoCodeId",
+  "/promo-code/update-promo-code-by-admin/:promoCodeId",
   PromoCodeController.updatePromoCode,
 );
 router.patch(
@@ -17,7 +17,7 @@ router.patch(
 );
 
 router.get(
-  "/promo-code/delete-promo-code/:promoCodeId",
+  "/promo-codes/delete-promo-code/:promoCodeId",
   PromoCodeController.deletePromoCode,
 );
 

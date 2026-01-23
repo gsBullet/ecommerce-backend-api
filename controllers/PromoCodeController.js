@@ -103,8 +103,143 @@ module.exports = {
       });
     }
   },
-  updatePromoCode: async (req, res) => {},
-  deletePromoCode: async (req, res) => {},
+  updatePromoCode: async (req, res) => {
+    const { promoCodeId } = req.params;
+    try {
+      let {
+        code,
+        discountType,
+        discountValue,
+        maxDiscount,
+        minPurchaseAmount,
+        validFrom,
+        validUntil,
+        usageLimit,
+        isActive,
+        applicableProducts,
+        applicableCategories,
+        customerSpecific,
+      } = req.body;
+
+      // ---- CAST TYPES ----
+      discountValue = Number(discountValue);
+      maxDiscount =
+        maxDiscount === "null" ||
+        maxDiscount === undefined ||
+        maxDiscount === ""
+          ? null
+          : Number(maxDiscount);
+      minPurchaseAmount = Number(minPurchaseAmount || 0);
+      usageLimit = usageLimit ? Number(usageLimit) : null;
+      isActive = isActive === "true" || isActive === true;
+
+      validFrom = new Date(validFrom);
+      validUntil = new Date(validUntil);
+
+      if (!Array.isArray(applicableProducts))
+        applicableProducts = applicableProducts ? [applicableProducts] : [];
+
+      if (!Array.isArray(applicableCategories))
+        applicableCategories = applicableCategories
+          ? [applicableCategories]
+          : [];
+
+      if (!Array.isArray(customerSpecific))
+        customerSpecific = customerSpecific ? [customerSpecific] : [];
+
+      // ---- CHECK DUPLICATE CODE ----
+      const exists = await PromoCodeModel.findOne({
+        code,
+        _id: { $ne: promoCodeId },
+      });
+      if (exists) {
+        ErrorHandler({
+          error: exists.code,
+          message: "Promo code already exists",
+          code: 400,
+          res,
+          req,
+          req,
+        });
+      }
+      // ---- UPDATE ----
+      const promo = await PromoCodeModel.findByIdAndUpdate(
+        promoCodeId,
+        {
+          code,
+          discountType,
+          discountValue,
+          maxDiscount,
+          minPurchaseAmount,
+          validFrom,
+          validUntil,
+          usageLimit,
+          isActive,
+          applicableProducts,
+          applicableCategories,
+          customerSpecific,
+        },
+        { new: true },
+      ).exec();
+
+      if (promo) {
+        successHandler({
+          message: "Promo code updated successfully",
+          data: promo,
+          code: 200,
+          res,
+          req,
+        });
+      } else {
+        ErrorHandler({
+          error: "Update failed",
+          message: "Failed to update promo code",
+          code: 500,
+          res,
+          req,
+        });
+      }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: error._message,
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
+  deletePromoCode: async (req, res) => {
+    const { promoCodeId } = req.params;
+    try {
+      const promo = await PromoCodeModel.findByIdAndDelete(promoCodeId).exec();
+      if (promo) {
+        successHandler({
+          message: "Promo code deleted successfully",
+          data: promo,
+          code: 200,
+          res,
+          req,
+        });
+      } else {
+        ErrorHandler({
+          error: "Deletion failed",
+          message: "Failed to delete promo code",
+          code: 500,
+          res,
+          req,
+        });
+      }
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: error._message,
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
   updatePromoCodeStatus: async (req, res) => {
     const { promoCodeId } = req.params;
     const { isActive } = req.body;
@@ -171,7 +306,12 @@ module.exports = {
     const totalPromoCodes = await PromoCodeModel.countDocuments(filter);
     successHandler({
       message: "Get Promo Code List",
-      data: { promoCodes, totalPromoCodes, limit, totalPages: Math.ceil(totalPromoCodes / limit) },
+      data: {
+        promoCodes,
+        totalPromoCodes,
+        limit,
+        totalPages: Math.ceil(totalPromoCodes / limit),
+      },
       code: 200,
       res,
       req,
