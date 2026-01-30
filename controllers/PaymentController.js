@@ -9,41 +9,56 @@ module.exports = {
   createPaymentManual: async (req, res) => {
     // console.log(req.body);
 
-    // return;
+    // return res
+    //   .status(200)
+    //   .json({ message: "Payment created successfully", data: req.body });
     try {
-      const { paymentMethod, phone, trxId, amount, customerId, products } =
-        req.body;
-      const productCodes = Object.keys(products);
-      const quantities = Object.values(products);
+      const {
+        paymentMethod,
+        phone,
+        trxId,
+        amount,
+        customerId,
+        products,
+      } = req.body;
+      const cartItems = Object.values(products);
+
+      const productIds = [...new Set(cartItems.map((p) => p.productId))];
+
       const findProducts = await ProductModel.find({
-        id: { $in: productCodes },
+        id: { $in: productIds },
       })
-        .select("_id new_price id")
+        .select("_id new_price id name category") 
         .lean();
 
-      let customerProducts = findProducts.map((prod, index) => {
+      // merge price with cart data
+      const finalData = cartItems.map((item) => {
+        const product = findProducts.find((p) => p.id === item.productId);
+
+
         return {
-          productId: prod._id,
-          id: prod.id,
-          name: prod.name,
-          quantity: Object.keys(products)
-            .map((code, idx) => (code === prod.id ? quantities[idx] : 0))
-            .reduce((a, b) => a + b, 0),
-          price: prod.new_price,
-          total:
-            prod.new_price *
-            Object.keys(products)
-              .map((code, idx) => (code === prod.id ? quantities[idx] : 0))
-              .reduce((a, b) => a + b, 0),
+          id: product?.id,
+          name: product?.name || "",
+          size: item.size,
+          quantity: item.quantity,
+          price: product?.new_price || 0,
+          productId: product?._id,
+          categoryId: product?.category ,
+          total: product?.new_price * item.quantity,
         };
       });
+      console.log(finalData);
+      
+  //  return;
+      const customerProducts = finalData;
+      
       const totalQuantity = customerProducts.reduce(
         (sum, item) => sum + item.quantity,
-        0
+        0,
       );
       const totalAmount = customerProducts.reduce(
         (sum, item) => sum + item.total,
-        0
+        0,
       );
       const payment = await GeneralUsersModel.findById(customerId);
 
@@ -51,8 +66,8 @@ module.exports = {
         payment.addresses?.[0]?.deliveryMethod === "inside-dhaka" ? 60 : 120;
 
       const finalAmount = totalAmount + deliveryFee;
-      console.log(finalAmount, parseInt(amount), deliveryFee);
-
+      console.log(finalAmount, parseInt(amount), deliveryFee,totalQuantity);
+// return;
       if (finalAmount === parseInt(amount)) {
         const customer = await GeneralUsersModel.findById(customerId);
         const payment = await PaymentModel.create({
@@ -62,8 +77,9 @@ module.exports = {
           customerId,
           payAmount: Number(amount),
           customerProducts,
-          quantity: totalQuantity,
+          totalQuantity: totalQuantity,
           totalAmount: finalAmount,
+          deliveryFee,
           address: customer.addresses?.[0]?.address,
         });
 
@@ -136,7 +152,7 @@ module.exports = {
       const payment = await PaymentModel.findByIdAndUpdate(
         paymentId,
         { status },
-        { new: true }
+        { new: true },
       );
       if (!payment) {
         return res.status(404).json({

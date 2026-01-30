@@ -45,6 +45,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    // product_size:{
+    //   type: [String],
+    //   required: true, 
+    // },
     available: {
       type: Boolean,
       default: true,
