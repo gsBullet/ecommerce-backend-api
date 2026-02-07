@@ -7,20 +7,9 @@ const successHandler = require("../utils/success");
 module.exports = {
   // Create Payment
   createPaymentManual: async (req, res) => {
-    // console.log(req.body);
-
-    // return res
-    //   .status(200)
-    //   .json({ message: "Payment created successfully", data: req.body });
     try {
-      const {
-        paymentMethod,
-        phone,
-        trxId,
-        amount,
-        customerId,
-        products,
-      } = req.body;
+      const { paymentMethod, phone, trxId, amount, customerId, products } =
+        req.body;
       const cartItems = Object.values(products);
 
       const productIds = [...new Set(cartItems.map((p) => p.productId))];
@@ -28,13 +17,12 @@ module.exports = {
       const findProducts = await ProductModel.find({
         id: { $in: productIds },
       })
-        .select("_id new_price id name category") 
+        .select("_id new_price id name category")
         .lean();
 
       // merge price with cart data
       const finalData = cartItems.map((item) => {
         const product = findProducts.find((p) => p.id === item.productId);
-
 
         return {
           id: product?.id,
@@ -43,15 +31,15 @@ module.exports = {
           quantity: item.quantity,
           price: product?.new_price || 0,
           productId: product?._id,
-          categoryId: product?.category ,
+          categoryId: product?.category,
           total: product?.new_price * item.quantity,
         };
       });
-      console.log(finalData);
-      
-  //  return;
+      // console.log("finalData",finalData);
+
+      //  return;
       const customerProducts = finalData;
-      
+
       const totalQuantity = customerProducts.reduce(
         (sum, item) => sum + item.quantity,
         0,
@@ -62,12 +50,14 @@ module.exports = {
       );
       const payment = await GeneralUsersModel.findById(customerId);
 
+      // console.log(`payment`, payment);
+
       const deliveryFee =
-        payment.addresses?.[0]?.deliveryMethod === "inside-dhaka" ? 60 : 120;
+        payment.addresses?.[0]?.deliveryMethod === "dhaka" ? 60 : 120;
 
       const finalAmount = totalAmount + deliveryFee;
-      console.log(finalAmount, parseInt(amount), deliveryFee,totalQuantity);
-// return;
+      console.log(finalAmount, parseInt(amount), deliveryFee, totalQuantity);
+      // return;
       if (finalAmount === parseInt(amount)) {
         const customer = await GeneralUsersModel.findById(customerId);
         const payment = await PaymentModel.create({

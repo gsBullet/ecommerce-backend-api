@@ -180,6 +180,8 @@ module.exports = {
         deliveryMethod,
       } = req.body.formData;
 
+      console.log("updateCustomerUserInfo → req.body", req.body);
+
       const userId = req.params.userId;
 
       const user = await GeneralUsersModel.findById(userId);
