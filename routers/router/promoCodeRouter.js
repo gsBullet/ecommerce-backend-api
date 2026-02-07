@@ -37,5 +37,9 @@ router.get(
   "/general-users/discount-for-users",
   PromoCodeController.getAllUsersForDiscount,
 );
+router.get(
+  "/apply-promo-code-for-products",
+  PromoCodeController.applyAllPromoCodeForProducts,
+);
 
 module.exports = () => router;

@@ -371,4 +371,26 @@ module.exports = {
       });
     }
   },
+  applyAllPromoCodeForProducts: async (req, res) => {
+
+    const { promo } = req.query;
+
+    try {
+      const matchPromo = await PromoCodeModel.find({code: promo}).exec();
+
+     
+
+      console.log(matchPromo);
+      return ;
+     
+    } catch (error) {
+      ErrorHandler({
+        error,
+        message: error._message,
+        code: 500,
+        res,
+        req,
+      });
+    }
+  },
 };
